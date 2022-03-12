@@ -1,0 +1,57 @@
+import React,{useState,useEffect} from 'react';
+import { View, Text } from 'react-native';
+
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming
+} from 'react-native-reanimated';
+
+import { styles } from './styles';
+
+type Props = {
+  currentCard: number;
+  totalOfCards: number;
+}
+
+export function Progress({ currentCard, totalOfCards }: Props) {
+  const [width, setWidth] = useState(0);
+  const animated = useSharedValue(-1000);
+
+  const progressBarAnimatedStyle = useAnimatedStyle(()=>{
+    return{
+      transform:[
+        {
+          translateX:animated.value
+        }
+      ]
+    }
+  });
+
+  useEffect(()=>{
+    const newProgressBarWidth = -width + (width * currentCard) / totalOfCards;
+    animated.value = withTiming(newProgressBarWidth, {duration:500});
+  },[currentCard,width]);
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.percentage}>
+        <Text style={styles.label}>0%</Text>
+
+        <View style={styles.thumbProgressBar}>
+          <Animated.View 
+            style={[styles.currentProgressBar,progressBarAnimatedStyle]} 
+            onLayout = {(e)=>{
+              const widthCurrent = e.nativeEvent.layout.width;
+              setWidth(widthCurrent);
+            }}
+          />
+        </View>
+
+        <Text style={styles.label}>100%</Text>
+      </View>
+
+      <Text style={styles.label}>{currentCard} de {totalOfCards} cards</Text>
+    </View >
+  );
+}
